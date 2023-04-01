@@ -12,12 +12,12 @@ logging.captureWarnings(True)
 
 http.client.HTTPConnection._http_vsn_str = 'HTTP/1.1'
 
-TABLENAME = "tomresu"  # 存储扫描结果的表
+TABLENAME = "tomres"  # 存储扫描结果的表
 DATATABLENAME = "fofadata"  # 存储数据来源的表
 HOST = "127.0.0.1"
-PORT = 3306
-USER = "root"
-PASSWORD = "root"
+MYSQLPORT = 3306
+MYSQLUSER = "root"
+MYSQLPASSWORD = "root"
 DATABASE = "fofa"  # 数据库
 USERS = ['tomcat', 'admin', 'manager']  # 用户名字典
 PASSWORDS = ['tomcat', 'admin', '123456', '12345678', 's3cret', 'admin123']  # 密码字典
@@ -32,8 +32,8 @@ def conn(ip, port, user, pwd, db):
 
 
 def getTarGet():
-    global HOST, PORT, USER, PASSWORD, DATABASE, DATATABLENAME
-    db = conn(HOST, PORT, USER, PASSWORD, DATABASE)
+    global HOST, MYSQLPORT, MYSQLUSER, MYSQLPASSWORD, DATABASE, DATATABLENAME
+    db = conn(HOST, MYSQLPORT, MYSQLUSER, MYSQLPASSWORD, DATABASE)
     if db[0]:
         database = db[1]
         cursor = database.cursor(pymysql.cursors.DictCursor)
@@ -45,8 +45,8 @@ def getTarGet():
 
 
 def init(tablename):
-    global HOST, PORT, USER, PASSWORD, DATABASE
-    db = conn(HOST, PORT, USER, PASSWORD, DATABASE)
+    global HOST, MYSQLPORT, MYSQLUSER, MYSQLPASSWORD, DATABASE
+    db = conn(HOST, MYSQLPORT, MYSQLUSER, MYSQLPASSWORD, DATABASE)
     if db[0]:
         database = db[1]
         cursor = database.cursor(pymysql.cursors.DictCursor)
@@ -58,8 +58,8 @@ def init(tablename):
 
 
 def insert(tablename, url, user, pwd, ip, port):
-    global HOST, PORT, USER, PASSWORD, DATABASE
-    db = conn(HOST, PORT, USER, PASSWORD, DATABASE)
+    global HOST, MYSQLPORT, MYSQLUSER, MYSQLPASSWORD, DATABASE
+    db = conn(HOST, MYSQLPORT, MYSQLUSER, MYSQLPASSWORD, DATABASE)
     if db[0]:
         database = db[1]
         cursor = database.cursor(pymysql.cursors.DictCursor)
@@ -142,4 +142,3 @@ if __name__ == '__main__':
         t.start()
     for t in threads:
         t.join()
-    # print(attack('127.0.0.1',8080,'tomcat,tomcat'))
